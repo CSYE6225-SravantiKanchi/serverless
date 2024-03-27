@@ -6,6 +6,12 @@ const mysql = require('mysql2/promise');
 
 const auth = { username: process.env.MAILGUN_USER, password: process.env.MAILGUN_PASSWORD };
 
+const pool = mysql.createPool({
+  host: process.env.SQL_HOST,
+  user:  process.env.SQL_USER, 
+  password:  process.env.SQL_PASSWORD,
+  database: process.env.SQL_DB
+});
 
 
 const loadTemplate = async () => {
@@ -21,9 +27,9 @@ const loadTemplate = async () => {
 // send mail
 const sendMail = async (params) => {
   try {
-    const { from, to, verificationLink, domain } = params;
+    const { from, to, verificationLink, domain, name } = params;
     const template = await loadTemplate();
-    const emailContent = template({ verificationLink });
+    const emailContent = template({ verificationLink, name });
 
     const formData = {
       from: `Excited User <${from}>`,
@@ -49,21 +55,10 @@ functions.cloudEvent('helloPubSub', async cloudEvent => {
   const base64name = cloudEvent.data.message.data;
   const buffer = Buffer.from(base64name, 'base64').toString();
   const jsonObject = JSON.parse(buffer);
-  await sendMail(jsonObject);
 
   try {
-    console.log(process.env.SQL_HOST, process.env.SQL_USER, process.env.SQL_PASSWORD, process.env.SQL_DB )
-    const pool = mysql.createPool({
-      host: process.env.SQL_HOST,
-      user:  process.env.SQL_USER, 
-      password:  process.env.SQL_PASSWORD,
-      database: process.env.SQL_DB
-    });
-
-    // Get a connection from the pool
     const connection = await pool.getConnection();
-
-    // Execute the update query
+    await sendMail(jsonObject);
     const updateQuery = 'INSERT INTO MailTrackings (email, mail_sent) VALUES (?, CURRENT_TIMESTAMP()) ON DUPLICATE KEY UPDATE mail_sent = CURRENT_TIMESTAMP();';
     await connection.execute(updateQuery, [jsonObject.to]);
     await connection.release();
@@ -71,10 +66,9 @@ functions.cloudEvent('helloPubSub', async cloudEvent => {
     console.log('Database connected successfully!');
 
   } catch(err) {
-    console.error('Error connecting to the database:', err);
-
+    console.error('Error connecting to the database or sending the mail', err);
+    throw new Error("retry it, as this event failed!");
   }
-
 });
 
 

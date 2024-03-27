@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Email for User Creation</title>
+    <title>WebApp Email Verification</title>
 </head>
 <body>
-    <p>Hello,</p>
-    <p>Please click the following link to verify your email address:</p>
-    <a href="{{ verificationLink }}">Verify Email</a>
+    <p>Hi {{ name }}</p>
+    <p>Please verify your email address by clicking the link below:</p>
+    <p><a href="{{ verificationLink }}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none;">Verify Email</a></p>
+    <p>If you did not create an account, you can safely ignore this email.</p>
 </body>
 </html>

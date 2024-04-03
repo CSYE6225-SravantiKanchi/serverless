@@ -59,7 +59,7 @@ functions.cloudEvent('helloPubSub', async cloudEvent => {
   try {
     const connection = await pool.getConnection();
     await sendMail(jsonObject);
-    const updateQuery = 'INSERT INTO MailTrackings (email, mail_sent, expiry_date) VALUES (?, CURRENT_TIMESTAMP(), TIMESTAMPADD(MINUTE, 2, CURRENT_TIMESTAMP())) ON DUPLICATE KEY UPDATE mail_sent = CURRENT_TIMESTAMP(), expiry_date = TIMESTAMPADD(MINUTE, 2, CURRENT_TIMESTAMP());';
+    const updateQuery = 'INSERT INTO MailTrackings (email, mail_sent, expiry_time) VALUES (?, CURRENT_TIMESTAMP(), TIMESTAMPADD(MINUTE, 2, CURRENT_TIMESTAMP())) ON DUPLICATE KEY UPDATE mail_sent = CURRENT_TIMESTAMP(), expiry_time = TIMESTAMPADD(MINUTE, 2, CURRENT_TIMESTAMP());';
     await connection.execute(updateQuery, [jsonObject.to]);
     await connection.release();
     console.log('Mail sent field updated successfully for user:', jsonObject.to);  
